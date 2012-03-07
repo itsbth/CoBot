@@ -1,4 +1,5 @@
-{_} = $
+_ = require 'underscore'
+bean = require 'bean'
 
 Rand =
   gauss_std: ->
@@ -130,23 +131,40 @@ class ParticleFilter
 $.domReady ->
   canvas = $('#target')[0]
   ctx = canvas.getContext '2d'
-  bot = new Robot(Vector.random(512), Math.random() * Math.PI * 2)
-  document.bot = bot
+  bot = filter = landmarks = null
+  setup = (lcount=4, pnum=10000) ->
+    bot = new Robot(Vector.random(512), Math.random() * Math.PI * 2)
 
-  landmarks =
-    Vector.random(512, 512) for i in [1..3]
-  document.landmarks = landmarks
+    landmarks =
+      Vector.random(512, 512) for i in [1..lcount]
+    document.landmarks = landmarks
 
-  filter = new ParticleFilter bot, landmarks
-  filter.setNoise move: 0.05, turn: 0.05, measure: 5.0
+    filter = new ParticleFilter bot, landmarks, pnum
+    filter.setNoise move: 0.05, turn: 0.05, measure: 5.0
+
+  lm_field = $('#landmarks')[0]
+  pc_field = $('#particles')[0]
+  pdt_span = $('#p_dt')[0]
+  ddt_span = $('#d_dt')[0]
+  bean.add $('#restart')[0], 'click', ->
+    setup parseInt(lm_field.value) || 4, parseInt(pc_field.value) || 10000
+
+  setup()
 
   setTimeout draw = ->
     ctx.clearRect 0, 0, 512, 512
+
+    start = Date.now()
 
     bot.move 0, 5
     filter.move 0, 5
     filter.weight(bot.sense(landmarks))
     filter.resample()
+
+    end = Date.now()
+    pdt_span.innerText = end - start
+
+    start = Date.now()
 
     bot.draw ctx
     filter.draw ctx
@@ -157,5 +175,9 @@ $.domReady ->
       ctx.beginPath()
       ctx.arc lm.x, lm.y, 5, 0, Math.PI * 2
       ctx.stroke()
+
+    end = Date.now()
+    ddt_span.innerText = end - start
+
     setTimeout draw, 100
   , 1000

@@ -1,7 +1,9 @@
 (function() {
-  var ParticleFilter, Prob, Rand, Robot, Util, Vector, _;
+  var ParticleFilter, Prob, Rand, Robot, Util, Vector, bean, _;
 
-  _ = $._;
+  _ = require('underscore');
+
+  bean = require('bean');
 
   Rand = {
     gauss_std: function() {
@@ -243,33 +245,50 @@
   })();
 
   $.domReady(function() {
-    var bot, canvas, ctx, draw, filter, i, landmarks;
+    var bot, canvas, ctx, ddt_span, draw, filter, landmarks, lm_field, pc_field, pdt_span, setup;
     canvas = $('#target')[0];
     ctx = canvas.getContext('2d');
-    bot = new Robot(Vector.random(512), Math.random() * Math.PI * 2);
-    document.bot = bot;
-    landmarks = (function() {
-      var _results;
-      _results = [];
-      for (i = 1; i <= 3; i++) {
-        _results.push(Vector.random(512, 512));
-      }
-      return _results;
-    })();
-    document.landmarks = landmarks;
-    filter = new ParticleFilter(bot, landmarks);
-    filter.setNoise({
-      move: 0.05,
-      turn: 0.05,
-      measure: 5.0
+    bot = filter = landmarks = null;
+    setup = function(lcount, pnum) {
+      var i;
+      if (lcount == null) lcount = 4;
+      if (pnum == null) pnum = 10000;
+      bot = new Robot(Vector.random(512), Math.random() * Math.PI * 2);
+      landmarks = (function() {
+        var _results;
+        _results = [];
+        for (i = 1; 1 <= lcount ? i <= lcount : i >= lcount; 1 <= lcount ? i++ : i--) {
+          _results.push(Vector.random(512, 512));
+        }
+        return _results;
+      })();
+      document.landmarks = landmarks;
+      filter = new ParticleFilter(bot, landmarks, pnum);
+      return filter.setNoise({
+        move: 0.05,
+        turn: 0.05,
+        measure: 5.0
+      });
+    };
+    lm_field = $('#landmarks')[0];
+    pc_field = $('#particles')[0];
+    pdt_span = $('#p_dt')[0];
+    ddt_span = $('#d_dt')[0];
+    bean.add($('#restart')[0], 'click', function() {
+      return setup(parseInt(lm_field.value) || 4, parseInt(pc_field.value) || 10000);
     });
+    setup();
     return setTimeout(draw = function() {
-      var lm, _i, _len;
+      var end, lm, start, _i, _len;
       ctx.clearRect(0, 0, 512, 512);
+      start = Date.now();
       bot.move(0, 5);
       filter.move(0, 5);
       filter.weight(bot.sense(landmarks));
       filter.resample();
+      end = Date.now();
+      pdt_span.innerText = end - start;
+      start = Date.now();
       bot.draw(ctx);
       filter.draw(ctx);
       for (_i = 0, _len = landmarks.length; _i < _len; _i++) {
@@ -280,6 +299,8 @@
         ctx.arc(lm.x, lm.y, 5, 0, Math.PI * 2);
         ctx.stroke();
       }
+      end = Date.now();
+      ddt_span.innerText = end - start;
       return setTimeout(draw, 100);
     }, 1000);
   });

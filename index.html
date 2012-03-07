@@ -6,9 +6,16 @@
     <script src="js/robot.js"></script>
   </head>
   <body>
-    <a href="http://github.com/you"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
+    <a href="https://github.com/itsbth/CoBot"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
     <canvas id="target" width="512" height="512">
       <p><strong>Your browser sucks!</strong></p>
     </canvas>
+    <div id="controls">
+      <label>Landmarks: <input id="landmarks" type="number" value="4" /></label>
+      <label>Particles: <input id="particles" type="number" value="10000" step="100" /></label>
+      <button id="restart">Restart</button>
+      <p>Particle update: <span id="p_dt">0.3</span> ms</p>
+      <p>Drawing: <span id="d_dt">0.3</span> ms</p>
+    </div>
   </body>
 </html>
